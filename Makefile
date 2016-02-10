@@ -73,5 +73,3 @@ publish:
 
 clean:
 	rm -f -- $(GENERATED_FILES)
-
-# No change.
