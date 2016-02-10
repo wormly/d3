@@ -1,6 +1,5 @@
 import "layout";
 import "hierarchy";
-import "tree";
 
 d3.layout.pack = function() {
   var hierarchy = d3.layout.hierarchy().sort(d3_layout_packSort),
@@ -17,15 +16,15 @@ d3.layout.pack = function() {
 
     // Recursively compute the layout.
     root.x = root.y = 0;
-    d3_layout_treeVisitAfter(root, function(d) { d.r = +r(d.value); });
-    d3_layout_treeVisitAfter(root, d3_layout_packSiblings);
+    d3_layout_hierarchyVisitAfter(root, function(d) { d.r = +r(d.value); });
+    d3_layout_hierarchyVisitAfter(root, d3_layout_packSiblings);
 
     // When padding, recompute the layout using scaled padding.
     if (padding) {
       var dr = padding * (radius ? 1 : Math.max(2 * root.r / w, 2 * root.r / h)) / 2;
-      d3_layout_treeVisitAfter(root, function(d) { d.r += dr; });
-      d3_layout_treeVisitAfter(root, d3_layout_packSiblings);
-      d3_layout_treeVisitAfter(root, function(d) { d.r -= dr; });
+      d3_layout_hierarchyVisitAfter(root, function(d) { d.r += dr; });
+      d3_layout_hierarchyVisitAfter(root, d3_layout_packSiblings);
+      d3_layout_hierarchyVisitAfter(root, function(d) { d.r -= dr; });
     }
 
     // Translate and scale the layout to fit the requested size.
@@ -76,7 +75,7 @@ function d3_layout_packIntersects(a, b) {
   var dx = b.x - a.x,
       dy = b.y - a.y,
       dr = a.r + b.r;
-  return .999 * dr * dr > dx * dx + dy * dy; // relative error within epsilon
+  return 0.999 * dr * dr > dx * dx + dy * dy; // relative error within epsilon
 }
 
 function d3_layout_packSiblings(node) {
@@ -183,8 +182,8 @@ function d3_layout_packUnlink(node) {
 
 function d3_layout_packTransform(node, x, y, k) {
   var children = node.children;
-  node.x = (x += k * node.x);
-  node.y = (y += k * node.y);
+  node.x = x += k * node.x;
+  node.y = y += k * node.y;
   node.r *= k;
   if (children) {
     var i = -1, n = children.length;
@@ -201,7 +200,7 @@ function d3_layout_packPlace(a, b, c) {
         dc = dx * dx + dy * dy;
     da *= da;
     db *= db;
-    var x = .5 + (db - da) / (2 * dc),
+    var x = 0.5 + (db - da) / (2 * dc),
         y = Math.sqrt(Math.max(0, 2 * da * (db + dc) - (db -= dc) * db - da * da)) / (2 * dc);
     c.x = a.x + x * dx + y * dy;
     c.y = a.y + x * dy - y * dx;
